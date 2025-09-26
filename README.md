@@ -1,275 +1,408 @@
-# Pi-karskieInfo
-Nowe informacje o piłce nożnej znajdziesz na naszej stronie.
 <!doctype html>
 <html lang="pl">
 <head>
   <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Piłka Nożna — Strona Informacyjna</title>
-  <meta name="description" content="Prosta, czytelna strona o piłce nożnej — wiadomości, drużyny, terminarz i zasady. Gotowa do wysłania znajomemu." />
-
-  <!-- Prosty, czysty styl -->
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
+  <title>Piłkarski Feed — Twoje pionowe wideo/tekst</title>
+  <meta name="description" content="Pionowy feed o piłce nożnej — publikuj aktualności, zdjęcia, filmy, komentuj, lajkuj i udostępniaj." />
   <style>
     :root{
-      --bg:#0f1724; /* ciemne tło inspirowane technicznymi sklepami */
-      --card:#0b1220;
-      --accent:#ffb020;
-      --muted:#94a3b8;
-      --text:#e6eef6;
-      --glass: rgba(255,255,255,0.03);
-      font-family: Inter, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
+      --bg:#05060a; --card:#0d1117; --muted:#9aa5b1; --accent:#ffb020; --glass:rgba(255,255,255,0.03);
+      --accent-2:#ff7a18; --success:#22c55e;
+      color-scheme: dark; font-family: Inter, system-ui, -apple-system, Roboto, "Helvetica Neue", Arial;
     }
     *{box-sizing:border-box}
-    body{
-      margin:0;
-      background:linear-gradient(180deg,var(--bg), #08101a);
-      color:var(--text);
-      -webkit-font-smoothing:antialiased;
-      -moz-osx-font-smoothing:grayscale;
-      line-height:1.45;
+    html,body{height:100%;margin:0;background:linear-gradient(180deg,#021428,#031025);color:#e6eef6}
+    /* App layout */
+    .app{height:100vh;display:flex;flex-direction:column}
+    header.appbar{height:64px;display:flex;align-items:center;padding:10px 16px;gap:12px;background:linear-gradient(90deg,rgba(255,255,255,0.02),transparent);border-bottom:1px solid rgba(255,255,255,0.03)}
+    .brand{display:flex;align-items:center;gap:12px}
+    .logo{width:44px;height:44px;border-radius:10px;background:linear-gradient(135deg,var(--accent),var(--accent-2));display:grid;place-items:center;font-weight:700;color:#08101a}
+    .title{font-size:16px;font-weight:700}
+    .subtitle{font-size:12px;color:var(--muted)}
+
+    /* Main vertical feed area */
+    main.feed{flex:1;overflow-y:auto;scroll-snap-type:y mandatory;-webkit-overflow-scrolling:touch}
+    .post{min-height:calc(100vh - 64px); /* fill below header */scroll-snap-align:start;display:flex;flex-direction:column;justify-content:flex-end;padding:18px;position:relative}
+    .post-inner{background:linear-gradient(180deg, rgba(0,0,0,0.15), rgba(0,0,0,0.35));border-radius:12px;padding:18px;max-width:820px;margin:0 auto;width:100%;box-shadow:0 10px 30px rgba(2,6,23,0.6);border:1px solid rgba(255,255,255,0.02)}
+
+    /* Media area */
+    .media{position:absolute;inset:64px 0 0 0;display:grid;place-items:center;overflow:hidden}
+    .media img{max-width:100%;max-height:100%;object-fit:cover;width:100%}
+    .media iframe, .media video{width:100%;height:100%;border:0}
+
+    /* Overlay content */
+    .overlay{position:relative;z-index:3}
+    .post-info{display:flex;justify-content:space-between;align-items:flex-start;gap:12px}
+    .meta{max-width:70%}
+    .meta h3{margin:0 0 6px 0;font-size:18px}
+    .meta p{margin:0;color:var(--muted)}
+
+    .actions{display:flex;flex-direction:column;align-items:center;gap:12px}
+    .action-btn{background:var(--glass);border-radius:12px;padding:8px;display:flex;flex-direction:column;align-items:center;gap:6px;width:62px}
+    .action-btn button{background:none;border:0;color:var(--muted);cursor:pointer;font-size:14px}
+    .count{font-weight:700}
+
+    /* Composer floating */
+    .composer-btn{position:fixed;right:18px;bottom:20px;background:linear-gradient(90deg,var(--accent),var(--accent-2));padding:12px 14px;border-radius:50px;color:#08101a;font-weight:800;box-shadow:0 8px 30px rgba(0,0,0,0.6);cursor:pointer;border:0}
+
+    /* Modal */
+    .modal{position:fixed;inset:0;display:none;align-items:center;justify-content:center;background:linear-gradient(rgba(0,0,0,0.6),rgba(0,0,0,0.6));z-index:40;padding:20px}
+    .modal.open{display:flex}
+    .modal-card{width:100%;max-width:760px;background:linear-gradient(180deg,#071827,#061420);padding:18px;border-radius:12px;border:1px solid rgba(255,255,255,0.03)}
+    .field{display:flex;flex-direction:column;margin-bottom:12px}
+    label{font-size:13px;color:var(--muted);margin-bottom:6px}
+    input[type=text],textarea,select{background:rgba(255,255,255,0.02);border:1px solid rgba(255,255,255,0.03);padding:10px;border-radius:8px;color:var(--text)}
+    textarea{min-height:110px}
+    .row{display:flex;gap:8px}
+    .btn{padding:8px 12px;border-radius:8px;border:0;cursor:pointer}
+    .btn.primary{background:linear-gradient(90deg,var(--accent),var(--accent-2));color:#08101a;font-weight:800}
+    .btn.ghost{background:transparent;border:1px solid rgba(255,255,255,0.04);color:var(--muted)}
+
+    /* Comments panel */
+    .comments{position:fixed;right:18px;top:80px;width:320px;max-height:60vh;background:linear-gradient(180deg,#071827,#061420);border-radius:12px;padding:10px;border:1px solid rgba(255,255,255,0.03);overflow:auto}
+    .comments h4{margin:6px 0}
+    .comment{padding:8px;border-radius:8px;background:rgba(255,255,255,0.02);margin-bottom:8px}
+
+    /* Controls bar */
+    .controls{display:flex;gap:10px;align-items:center;margin-left:auto}
+    .search{padding:8px;border-radius:8px;background:rgba(255,255,255,0.02);border:1px solid rgba(255,255,255,0.03);color:var(--text)}
+
+    /* small screens adjustments */
+    @media(max-width:900px){
+      .comments{position:static;width:100%;max-height:200px;margin-top:12px}
+      .post-inner{border-radius:0;padding:14px}
+      .actions{position:fixed;right:10px;bottom:90px;flex-direction:row;background:transparent}
     }
-    .container{max-width:1000px;margin:28px auto;padding:20px;}
-    header{
-      display:flex;gap:16px;align-items:center;
-      margin-bottom:20px;
-    }
-    .logo{
-      width:64px;height:64px;border-radius:12px;
-      background:linear-gradient(135deg,var(--accent),#ff7a18);
-      display:flex;align-items:center;justify-content:center;
-      box-shadow: 0 6px 18px rgba(0,0,0,0.6);
-      flex-shrink:0;
-    }
-    .logo svg{filter:drop-shadow(0 2px 6px rgba(0,0,0,0.5));}
-    h1{font-size:20px;margin:0}
-    p.lead{color:var(--muted);margin:2px 0 0;font-size:13px}
 
-    nav.top{
-      display:flex;gap:10px;margin-top:12px;flex-wrap:wrap;
-    }
-    nav.top a{
-      background:var(--glass);padding:8px 12px;border-radius:10px;color:var(--text);
-      text-decoration:none;font-size:13px;border:1px solid rgba(255,255,255,0.03);
-    }
+    /* Empty state */
+    .empty{display:grid;place-items:center;height:calc(100vh - 64px);color:var(--muted)}
 
-    main{display:grid;grid-template-columns:1fr 340px;gap:18px;margin-top:18px;}
-    @media (max-width:900px){ main{grid-template-columns:1fr;} .container{padding:14px;} }
-
-    /* karty */
-    .card{background:linear-gradient(180deg,var(--card), rgba(255,255,255,0.01)); padding:14px;border-radius:12px;
-      box-shadow: 0 6px 16px rgba(2,6,23,0.6); border:1px solid rgba(255,255,255,0.02);}
-    .section-title{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px}
-    .section-title h2{font-size:16px;margin:0}
-    .muted{color:var(--muted);font-size:13px}
-
-    /* news list */
-    .news-item{padding:10px 0;border-bottom:1px dashed rgba(255,255,255,0.02)}
-    .news-item:last-child{border-bottom:0}
-    .news-item h3{margin:0;font-size:15px}
-    .news-meta{font-size:12px;color:var(--muted);margin-top:6px}
-
-    /* teams */
-    .team-list{display:grid;grid-template-columns:1fr 1fr;gap:8px}
-    .team{padding:8px;border-radius:8px;background:rgba(255,255,255,0.01);display:flex;align-items:center;gap:10px}
-    .crest{width:38px;height:38px;border-radius:8px;background:linear-gradient(135deg,#fff1,#fff2);display:flex;align-items:center;justify-content:center;font-weight:700;color:#0b1220}
-
-    /* fixtures */
-    .fixture{display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid rgba(255,255,255,0.02)}
-    .fixture:last-child{border-bottom:0}
-    .score{font-weight:700}
-
-    footer{margin-top:22px;color:var(--muted);font-size:13px;text-align:center}
-
-    /* print */
-    @media print{
-      body{background:white;color:black}
-      .logo{display:none}
-    }
+    /* Utility */
+    .muted{color:var(--muted)}
+    .chip{display:inline-block;padding:6px 10px;border-radius:999px;background:rgba(255,255,255,0.02);font-size:13px}
   </style>
 </head>
 <body>
-  <div class="container">
-    <header>
-      <div class="logo" aria-hidden="true">
-        <!-- prosty piłkarski symbol w SVG -->
-        <svg width="36" height="36" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-          <circle cx="12" cy="12" r="10" fill="white" />
-          <path d="M12 4.5L14.1 8.6L18.5 9.6L15.2 12.5L16 16.9L12 14.6L8 16.9L8.8 12.5L5.5 9.6L9.9 8.6L12 4.5Z" fill="#0b1220" />
-        </svg>
+  <div class="app">
+    <header class="appbar">
+      <div class="brand">
+        <div class="logo">⚽</div>
+        <div>
+          <div class="title">Piłkarski Feed</div>
+          <div class="subtitle">Pionowy feed do dzielenia się newsami i wideo</div>
+        </div>
       </div>
-      <div>
-        <h1>Wiadomości i informator: Piłka Nożna</h1>
-        <p class="lead">Szybka, czytelna strona z najważniejszymi informacjami o piłce nożnej — gotowa do wysłania znajomemu.</p>
-        <nav class="top" aria-label="Nawigacja">
-          <a href="#news">Wiadomości</a>
-          <a href="#teams">Drużyny</a>
-          <a href="#fixtures">Terminarz</a>
-          <a href="#rules">Zasady</a>
-          <a href="#about">O stronie</a>
-        </nav>
+      <div class="controls">
+        <input id="search" class="search" placeholder="Szukaj (drużyna, słowo)..." />
+        <button id="importBtn" class="btn ghost">Import</button>
+        <button id="exportBtn" class="btn ghost">Eksport</button>
       </div>
     </header>
 
-    <main>
-      <!-- GŁÓWNA KOLUMNA -->
-      <section>
-        <article id="news" class="card" aria-labelledby="news-title">
-          <div class="section-title">
-            <h2 id="news-title">Najnowsze wiadomości</h2>
-            <div class="muted">Aktualne (statyczne przykłady)</div>
-          </div>
-
-          <div class="news-item">
-            <h3>Wielki mecz: Klub A — Klub B 2:1</h3>
-            <div class="news-meta">28 wrz 2025 — Bramki: 45' i 78' — Krótki opis wydarzeń, kluczowe momenty i statystyki.</div>
-            <p class="muted" style="margin-top:8px">Komentarz: Mecz obfitował w akcje, znakomite interwencje bramkarzy i kontrowersyjne decyzje sędziowskie.</p>
-          </div>
-
-          <div class="news-item">
-            <h3>Transfer: Zawodnik X przenosi się do Klubu C</h3>
-            <div class="news-meta">27 wrz 2025 — Testy medyczne i 4-letni kontrakt.</div>
-            <p class="muted" style="margin-top:8px">Komentarz: Transfer oznacza wzmocnienie linii ataku Klubu C.</p>
-          </div>
-
-          <div class="news-item">
-            <h3>Nowa taktyka trenera Y daje efekty</h3>
-            <div class="news-meta">25 wrz 2025 — Analiza taktyczna i przykłady ustawienia 4-2-3-1.</div>
-            <p class="muted" style="margin-top:8px">Szybkie podsumowanie: większe naciskanie w środku pola, zmiana pozycji skrzydłowego.</p>
-          </div>
-
-        </article>
-
-        <article id="teams" class="card" style="margin-top:16px;">
-          <div class="section-title">
-            <h2>Drużyny (przykłady)</h2>
-            <div class="muted">Kliknij nazwę, by przeczytać opis</div>
-          </div>
-
-          <div class="team-list">
-            <div class="team">
-              <div class="crest">A</div>
-              <div>
-                <strong>Klub A</strong><div class="muted" style="font-size:12px">Miasto — Stadion A — Trener: Kowalski</div>
-              </div>
-            </div>
-
-            <div class="team">
-              <div class="crest">B</div>
-              <div>
-                <strong>Klub B</strong><div class="muted" style="font-size:12px">Miasto — Stadion B — Trener: Nowak</div>
-              </div>
-            </div>
-
-            <div class="team">
-              <div class="crest">C</div>
-              <div>
-                <strong>Klub C</strong><div class="muted" style="font-size:12px">Miasto — Stadion C — Trener: Wiśniewski</div>
-              </div>
-            </div>
-
-            <div class="team">
-              <div class="crest">D</div>
-              <div>
-                <strong>Klub D</strong><div class="muted" style="font-size:12px">Miasto — Stadion D — Trener: Zieliński</div>
-              </div>
-            </div>
-          </div>
-        </article>
-
-        <article id="fixtures" class="card" style="margin-top:16px;">
-          <div class="section-title">
-            <h2>Najbliższe spotkania</h2>
-            <div class="muted">Data i godzina (lokalna)</div>
-          </div>
-
-          <div class="fixture">
-            <div>
-              <div><strong>Klub A</strong> vs <strong>Klub B</strong></div>
-              <div class="muted" style="font-size:13px">30 wrz 2025 • 20:45 • Stadion A</div>
-            </div>
-            <div class="score muted">—</div>
-          </div>
-
-          <div class="fixture">
-            <div>
-              <div><strong>Klub C</strong> vs <strong>Klub D</strong></div>
-              <div class="muted" style="font-size:13px">03 paź 2025 • 18:00 • Stadion C</div>
-            </div>
-            <div class="score muted">—</div>
-          </div>
-
-          <p class="muted" style="margin-top:10px">Uwaga: To przykładowy terminarz — możesz edytować daty i godziny w pliku HTML.</p>
-        </article>
-
-        <article id="rules" class="card" style="margin-top:16px;">
-          <div class="section-title">
-            <h2>Podstawowe zasady piłki nożnej</h2>
-            <div class="muted">Krótki przewodnik</div>
-          </div>
-
-          <ul style="margin:0;padding-left:18px;color:var(--muted)">
-            <li>Mecz trwa 90 minut — dwie połowy po 45 minut + doliczony czas.</li>
-            <li>11 zawodników w każdej drużynie (w tym bramkarz).</li>
-            <li>Rzut karny przy faulu w polu karnym; rzuty wolne — w zależności od przewinienia.</li>
-            <li>Spalone: zawodnik w pozycji spalonej może być ukarany, jeśli bierze udział w akcji.</li>
-          </ul>
-          <p class="muted" style="margin-top:8px">To tylko szybkie przypomnienie — szczegółowe przepisy są opisane w Przepisach Gry FIFA.</p>
-        </article>
-
-      </section>
-
-      <!-- PRAWY PANEL -->
-      <aside>
-        <div class="card" id="about">
-          <div class="section-title"><h2>O tej stronie</h2><div class="muted">Wersja offline</div></div>
-          <p class="muted">Ta strona to pojedynczy plik HTML. Możesz edytować tekst (wiadomości, terminarz, drużyny) w zwykłym edytorze tekstu. Wszystko działa offline — wystarczy otworzyć plik w przeglądarce.</p>
-
-          <hr style="border:none;border-top:1px solid rgba(255,255,255,0.03);margin:12px 0">
-
-          <div style="display:flex;gap:8px;flex-direction:column">
-            <button onclick="window.print()" style="padding:8px;border-radius:8px;border:0;background:linear-gradient(90deg,var(--accent),#ff7a18);color:#08101a;font-weight:700;cursor:pointer">Drukuj / Zapisz jako PDF</button>
-            <a href="#" onclick="downloadHTML()" style="text-decoration:none;padding:8px;border-radius:8px;background:rgba(255,255,255,0.02);display:inline-block;color:var(--text);text-align:center">Pobierz plik HTML</a>
-          </div>
-
-          <script>
-            function downloadHTML(){
-              const blob = new Blob([document.documentElement.outerHTML], {type: 'text/html;charset=utf-8'});
-              const url = URL.createObjectURL(blob);
-              const a = document.createElement('a');
-              a.href = url;
-              a.download = 'pilka.html';
-              a.click();
-              URL.revokeObjectURL(url);
-            }
-          </script>
-        </div>
-
-        <div class="card" style="margin-top:16px">
-          <div class="section-title"><h2>Przydatne wskazówki</h2><div class="muted">Jak edytować i wysłać</div></div>
-          <ol style="color:var(--muted);padding-left:18px">
-            <li>Otwórz plik w edytorze (Notepad / TextEdit / VSCode).</li>
-            <li>Znajdź sekcję <code>&lt;article id="news"&gt;</code> i edytuj wiadomości.</li>
-            <li>Zapisz plik i otwórz w przeglądarce — zmiany od razu widoczne.</li>
-            <li>Wyślij plik jako załącznik w e-mailu lub udostępnij link z Google Drive.</li>
-          </ol>
-        </div>
-
-        <div class="card" style="margin-top:16px">
-          <div class="section-title"><h2>Kontakt</h2><div class="muted">Masz pomysł na zmianę?</div></div>
-          <p class="muted">Jeśli chcesz, mogę: dodać - aktualne wyniki pobierane z internetu, - podświetlanie najważniejszych wiadomości, - sekcję statystyk (strzelcy, asysty).</p>
-        </div>
-      </aside>
+    <main id="feed" class="feed" tabindex="0">
+      <!-- Posty będą tutaj renderowane -->
     </main>
 
-    <footer>
-      &copy; <span id="curYear"></span> Strona przykładowa — do użytku osobistego. Plik: pilka.html
-    </footer>
+    <!-- CTA: dodaj post -->
+    <button id="openComposer" class="composer-btn">+ Dodaj post</button>
+
+    <!-- modal composer -->
+    <div id="modal" class="modal" aria-hidden="true">
+      <div class="modal-card" role="dialog" aria-modal="true">
+        <h3>Nowy post</h3>
+        <div class="field">
+          <label>Tytuł</label>
+          <input id="postTitle" type="text" placeholder="Np. Wielkie zwycięstwo Klubu A" />
+        </div>
+        <div class="field">
+          <label>Treść / opis</label>
+          <textarea id="postText" placeholder="Napisz opis, wrażenia, analizę..."></textarea>
+        </div>
+        <div class="field">
+          <label>Typ mediów</label>
+          <select id="mediaType">
+            <option value="none">Brak (tekst)</option>
+            <option value="image">Obrazek (URL)</option>
+            <option value="video">YouTube (wklej link)</option>
+          </select>
+        </div>
+        <div class="field" id="mediaField" style="display:none">
+          <label>Adres URL</label>
+          <input id="mediaURL" type="text" placeholder="https://..." />
+        </div>
+        <div class="field">
+          <label>Tagi (oddziel przecinkami)</label>
+          <input id="tags" type="text" placeholder="np. liga,transfery,analiza" />
+        </div>
+        <div style="display:flex;gap:8px;justify-content:flex-end">
+          <button id="closeModal" class="btn ghost">Anuluj</button>
+          <button id="savePost" class="btn primary">Opublikuj</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Comments drawer (dynamic) -->
+    <div id="comments" class="comments" style="display:none">
+      <h4>Komentarze</h4>
+      <div id="commentsList"></div>
+      <div style="display:flex;gap:8px;margin-top:8px">
+        <input id="commentInput" placeholder="Dodaj komentarz..." style="flex:1;padding:8px;border-radius:8px;background:rgba(255,255,255,0.02);border:1px solid rgba(255,255,255,0.03);color:var(--text)" />
+        <button id="postComment" class="btn primary">Wyślij</button>
+      </div>
+    </div>
+
   </div>
 
+  <template id="postTemplate">
+    <article class="post">
+      <div class="media"></div>
+      <div class="post-inner overlay">
+        <div class="post-info">
+          <div class="meta">
+            <h3 class="title">Tytuł</h3>
+            <p class="desc muted">Opis...</p>
+            <div style="margin-top:8px"><span class="chip tags muted">#tag</span></div>
+            <div class="muted" style="margin-top:8px;font-size:12px">Opublikowano: <span class="time">—</span></div>
+          </div>
+          <div class="actions">
+            <div class="action-btn like">
+              <button class="likeBtn">❤</button>
+              <div class="count likeCount">0</div>
+            </div>
+            <div class="action-btn commentToggle">
+              <button class="commentBtn">💬</button>
+              <div class="count commentCount">0</div>
+            </div>
+            <div class="action-btn shareBtnWrap">
+              <button class="shareBtn">↗</button>
+              <div class="muted" style="font-size:11px">Udost.</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </article>
+  </template>
+
   <script>
-    // ustaw aktualny rok
-    document.getElementById('curYear').textContent = new Date().getFullYear();
+    // Prosty, rozbudowany klient feedu z localStorage
+    const STORAGE_KEY = 'pilkarski_feed_v1';
+    const feedEl = document.getElementById('feed');
+    const modal = document.getElementById('modal');
+    const openComposer = document.getElementById('openComposer');
+    const closeModal = document.getElementById('closeModal');
+    const savePost = document.getElementById('savePost');
+    const mediaType = document.getElementById('mediaType');
+    const mediaField = document.getElementById('mediaField');
+    const mediaURL = document.getElementById('mediaURL');
+    const postTitle = document.getElementById('postTitle');
+    const postText = document.getElementById('postText');
+    const tagsInput = document.getElementById('tags');
+    const commentsPanel = document.getElementById('comments');
+    const commentsList = document.getElementById('commentsList');
+    const commentInput = document.getElementById('commentInput');
+    const postComment = document.getElementById('postComment');
+    const importBtn = document.getElementById('importBtn');
+    const exportBtn = document.getElementById('exportBtn');
+    const searchInput = document.getElementById('search');
+
+    let posts = [];
+    let currentCommentsFor = null;
+
+    // helpers
+    function uid(){return Date.now().toString(36) + Math.random().toString(36).slice(2,8)}
+    function now(){return new Date().toISOString()}
+
+    // load/save
+    function save(){localStorage.setItem(STORAGE_KEY, JSON.stringify(posts))}
+    function load(){const raw=localStorage.getItem(STORAGE_KEY);posts = raw ? JSON.parse(raw) : []}
+
+    // render single post
+    function renderPost(post){
+      const tpl = document.getElementById('postTemplate');
+      const node = tpl.content.firstElementChild.cloneNode(true);
+      node.dataset.id = post.id;
+      // media
+      const mediaWrap = node.querySelector('.media');
+      mediaWrap.innerHTML = '';
+      if(post.mediaType === 'image' && post.mediaURL){
+        const img = document.createElement('img'); img.src = post.mediaURL; img.alt = post.title || '';
+        mediaWrap.appendChild(img);
+      } else if(post.mediaType === 'video' && post.mediaURL){
+        // embed youtube
+        const url = post.mediaURL;
+        const vid = extractYouTubeID(url);
+        if(vid){
+          const iframe = document.createElement('iframe');
+          iframe.src = `https://www.youtube.com/embed/${vid}?rel=0&modestbranding=1&playsinline=1`;
+          iframe.allow = 'accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture';
+          mediaWrap.appendChild(iframe);
+        } else {
+          mediaWrap.textContent = 'Nieprawidłowy link wideo';
+        }
+      }
+
+      // meta
+      node.querySelector('.title').textContent = post.title || 'Bez tytułu';
+      node.querySelector('.desc').textContent = post.text || '';
+      node.querySelector('.time').textContent = (new Date(post.created)).toLocaleString();
+      const tagsWrap = node.querySelector('.tags');
+      tagsWrap.innerHTML = '';
+      (post.tags||[]).slice(0,4).forEach(t=>{const s=document.createElement('span');s.className='chip';s.textContent='#'+t;tagsWrap.appendChild(s);tagsWrap.appendChild(document.createTextNode(' '))});
+
+      // counts and buttons
+      const likeCount = node.querySelector('.likeCount'); likeCount.textContent = post.likes||0;
+      const commentCount = node.querySelector('.commentCount'); commentCount.textContent = (post.comments||[]).length;
+
+      // like
+      node.querySelector('.likeBtn').addEventListener('click',()=>{
+        post.likes = (post.likes||0)+1; likeCount.textContent = post.likes; save();
+      });
+
+      // comments
+      node.querySelector('.commentToggle').addEventListener('click',()=>{
+        openComments(post.id);
+      });
+
+      // share
+      node.querySelector('.shareBtn').addEventListener('click',async ()=>{
+        const link = makeShareLink(post.id);
+        try{
+          if(navigator.share){
+            await navigator.share({title:post.title,text:post.text,url:link});
+          } else {
+            await navigator.clipboard.writeText(link);
+            alert('Link skopiowany do schowka');
+          }
+        }catch(e){alert('Udostępnianie nie powiodło się')}
+      });
+
+      // update comment count when comments change
+      return node;
+    }
+
+    function renderFeed(filterText=''){
+      feedEl.innerHTML = '';
+      const list = posts.slice().reverse(); // newest first
+      const filtered = list.filter(p=>{
+        if(!filterText) return true;
+        const t = filterText.toLowerCase();
+        return (p.title||'').toLowerCase().includes(t) || (p.text||'').toLowerCase().includes(t) || (p.tags||[]).join(',').toLowerCase().includes(t);
+      });
+      if(filtered.length===0){
+        const empty = document.createElement('div');empty.className='empty';empty.innerHTML='<div><h2>Brak postów</h2><p class="muted">Dodaj pierwszy post klikając przycisk "Dodaj post"</p></div>';
+        feedEl.appendChild(empty);return;
+      }
+      filtered.forEach(p=>{feedEl.appendChild(renderPost(p))});
+    }
+
+    // compose
+    openComposer.addEventListener('click',()=>{modal.classList.add('open');modal.setAttribute('aria-hidden','false')});
+    closeModal.addEventListener('click',()=>{modal.classList.remove('open');modal.setAttribute('aria-hidden','true');clearComposer()});
+    mediaType.addEventListener('change',()=>{mediaField.style.display = mediaType.value==='none' ? 'none' : 'block'});
+
+    savePost.addEventListener('click',()=>{
+      const title = postTitle.value.trim(); const text = postText.value.trim(); const type = mediaType.value; const url = mediaURL.value.trim();
+      const tags = tagsInput.value.split(',').map(s=>s.trim()).filter(Boolean);
+      if(!title && !text){alert('Dodaj tytuł lub treść');return}
+      if(type!=='none' && !url){alert('Podaj adres URL mediów');return}
+      const post = {id:uid(),title,text,mediaType:type,mediaURL:url,tags,created:now(),likes:0,comments:[]};
+      posts.push(post); save(); renderFeed(searchInput.value);
+      modal.classList.remove('open');modal.setAttribute('aria-hidden','true');clearComposer();
+      // scroll to top (show newest)
+      setTimeout(()=>{feedEl.scrollTo({top:0,behavior:'smooth'})},200);
+    });
+
+    function clearComposer(){postTitle.value='';postText.value='';mediaURL.value='';tagsInput.value='';mediaType.value='none';mediaField.style.display='none'}
+
+    // comments
+    function openComments(postId){
+      const post = posts.find(p=>p.id===postId); if(!post) return;
+      currentCommentsFor = postId; commentsPanel.style.display='block'; commentsList.innerHTML='';
+      post.comments = post.comments||[];
+      post.comments.forEach(c=>{const el=document.createElement('div');el.className='comment';el.innerHTML=`<strong>${escapeHtml(c.author)}</strong><div class="muted" style="font-size:12px">${new Date(c.created).toLocaleString()}</div><div style="margin-top:6px">${escapeHtml(c.text)}</div>`;commentsList.appendChild(el)});
+      document.getElementById('commentInput').focus();
+      updateCommentCounts();
+    }
+
+    postComment.addEventListener('click',()=>{
+      const text = commentInput.value.trim(); if(!text || !currentCommentsFor) return; const post = posts.find(p=>p.id===currentCommentsFor);
+      const comment = {id:uid(),author:'Anon',text,created:now()}; post.comments = post.comments||[]; post.comments.push(comment); save(); commentInput.value=''; openComments(currentCommentsFor); renderFeed(searchInput.value);
+    });
+
+    function updateCommentCounts(){
+      document.querySelectorAll('.post').forEach(node=>{
+        const id = node.dataset.id; const p = posts.find(x=>x.id===id); if(!p) return; const cc = (p.comments||[]).length; node.querySelector('.commentCount').textContent = cc;
+      })
+    }
+
+    // export/import
+    exportBtn.addEventListener('click',()=>{
+      const blob = new Blob([JSON.stringify(posts,null,2)],{type:'application/json'});
+      const url = URL.createObjectURL(blob); const a = document.createElement('a'); a.href=url; a.download='pilkarski_feed_export.json'; a.click(); URL.revokeObjectURL(url);
+    });
+
+    importBtn.addEventListener('click',()=>{
+      const inp = document.createElement('input'); inp.type='file'; inp.accept='application/json'; inp.onchange = async (e)=>{
+        const f = e.target.files[0]; if(!f) return; const text = await f.text(); try{ const data = JSON.parse(text); if(Array.isArray(data)) { posts = data; save(); renderFeed(); alert('Import zakończony'); } else alert('Plik nie ma poprawnej struktury'); }catch(err){alert('Błąd odczytu pliku')}
+      }; inp.click();
+    });
+
+    // search
+    searchInput.addEventListener('input',()=>renderFeed(searchInput.value));
+
+    // share link factory (encode id in URL hash)
+    function makeShareLink(postId){ const base = location.origin + location.pathname; return base + '#post=' + encodeURIComponent(postId); }
+
+    // deep link handling
+    function checkDeepLink(){ const h = location.hash; if(h && h.startsWith('#post=')){ const id = decodeURIComponent(h.split('=')[1]); // open the post by scrolling to it
+      setTimeout(()=>{ const el = document.querySelector(`[data-id="${id}"]`); if(el){ el.scrollIntoView({behavior:'smooth'}); el.style.outline='3px solid rgba(255,187,50,0.4)'; setTimeout(()=>el.style.outline='none',2500); openComments(id); } },400);
+    }}
+
+    // utils
+    function extractYouTubeID(url){ try{ const u=new URL(url); if(u.hostname.includes('youtube') || u.hostname.includes('youtu.be')){
+        if(u.hostname==='youtu.be') return u.pathname.slice(1);
+        return u.searchParams.get('v');
+      } }catch(e){} return null }
+    function escapeHtml(s){ return (s+'').replace(/[&<>"']/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":"&#39;"})[c]) }
+
+    // initial demo posts (only if storage empty)
+    function seedIfEmpty(){ if(posts.length>0) return; posts = [
+      {id:uid(),title:'Wielkie derby miasta',text:'Klub A pokonał Klub B 3:2 po emocjonującym spotkaniu. Bramki: 12', 55', 87'.','mediaType':'image','mediaURL':'https://images.unsplash.com/photo-1517927033932-9c2f0a8b8a4f?q=80&w=1600&auto=format&fit=crop&ixlib=rb-4.0.3&s=abcd','tags':['derby','liga'],'created:':now(),'created':now(),'likes':12,comments:[{id:uid(),author:'Kibic',text:'Co za mecz!',created:now()}]},
+      {id:uid(),title:'Analiza taktyczna 4-3-3',text:'Krótka analiza ustawienia i pressingu — zobaczcie wideo.',mediaType:'video',mediaURL:'https://www.youtube.com/watch?v=dQw4w9WgXcQ',tags:['analiza','taktika'],created:now(),likes:3,comments:[]}
+    ]; save(); }
+
+    // initialisation
+    load(); seedIfEmpty(); renderFeed(); checkDeepLink();
+
+    // keyboard navigation (arrow keys)
+    document.addEventListener('keydown',e=>{
+      if(e.key==='ArrowDown' || e.key==='j'){ window.scrollBy({top:window.innerHeight-64,behavior:'smooth'}) }
+      if(e.key==='ArrowUp' || e.key==='k'){ window.scrollBy({top:-(window.innerHeight-64),behavior:'smooth'}) }
+      if(e.key==='Escape'){ modal.classList.remove('open'); modal.setAttribute('aria-hidden','true') }
+    });
+
+    // simple accessibility focus
+    feedEl.addEventListener('focus',()=>feedEl.style.outline='none');
+
+    // show current post from hash on load
+    window.addEventListener('hashchange',checkDeepLink);
+
+    // make sure comment panel updates comment counts
+    window.addEventListener('storage',()=>{ load(); renderFeed(); });
+
+    // touch: swipe hint for mobile — (no external libs)
+    let touchStartY=0; feedEl.addEventListener('touchstart',e=>{ touchStartY = e.touches[0].clientY });
+    feedEl.addEventListener('touchend',e=>{ const dy = e.changedTouches[0].clientY - touchStartY; if(dy < -60) window.scrollBy({top:window.innerHeight-120,behavior:'smooth'}); if(dy > 60) window.scrollBy({top:-window.innerHeight+120,behavior:'smooth'}); });
+
+    // small helper: when posts update, refresh comments counts
+    const obs = new MutationObserver(()=>updateCommentCounts()); obs.observe(feedEl,{childList:true,subtree:true});
+
+    // expose helper for debugging (optional)
+    window._PILKA = {posts, save, load, renderFeed};
   </script>
 </body>
 </html>
+
+
 
