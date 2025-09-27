@@ -11,6 +11,12 @@
       --accent-2:#ff7a18; --success:#22c55e;
       color-scheme: dark; font-family: Inter, system-ui, -apple-system, Roboto, "Helvetica Neue", Arial;
     }
+    body {
+    background: url('images/moje_tlo.jpg') no-repeat center center fixed;
+    background-size: cover;
+    color: #fff;
+}
+
     *{box-sizing:border-box}
     html,body{height:100%;margin:0;background:linear-gradient(180deg,#021428,#031025);color:#e6eef6}
     /* App layout */
