@@ -12,7 +12,7 @@
       color-scheme: dark; font-family: Inter, system-ui, -apple-system, Roboto, "Helvetica Neue", Arial;
     }
     body {
-    background: url('images/moje_tlo.jpg') no-repeat center center fixed;
+    background: url("C:\Users\Users\Downloads\Na strone.jpg") no-repeat center center fixed;
     background-size: cover;
     color: #fff;
 }
