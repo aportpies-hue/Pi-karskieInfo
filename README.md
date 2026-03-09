@@ -4,7 +4,6 @@
 <meta charset="UTF-8">
 <title>Łukovia TV – Mecz na żywo</title>
 <style>
-/* Body i tło */
 body {
     margin: 0;
     font-family: 'Arial Black', Arial, sans-serif;
@@ -12,8 +11,6 @@ body {
     color: #fff;
     text-align: center;
 }
-
-/* Nagłówek z nazwą Łukovia */
 header {
     background: #ffcb05;
     color: #0b3d91;
@@ -24,8 +21,6 @@ header {
     text-shadow: 2px 2px #1e90ff;
     border-bottom: 4px solid #0b3d91;
 }
-
-/* Ramka wideo */
 .video-container {
     position: relative;
     width: 85%;
@@ -36,22 +31,16 @@ header {
     box-shadow: 0 0 30px rgba(0,0,0,0.6);
     overflow: hidden;
 }
-
-/* Odtwarzacz */
 iframe {
     width: 100%;
     height: 560px;
     border: none;
 }
-
-/* Info / napisy pod wideo */
 .info {
     margin-top: 20px;
     font-size: 1em;
     color: #fffbf0;
 }
-
-/* Wynik meczu / placeholder */
 .scoreboard {
     position: absolute;
     top: 15px;
@@ -71,23 +60,30 @@ iframe {
 <header>Łukovia TV – Mecz na żywo</header>
 
 <div class="video-container">
-    <!-- Wynik meczu (na razie placeholder, możesz zmienić) -->
-    <div class="scoreboard">Łukovia 0 : 0 Goście</div>
+    
 
-    <!-- Player Twitch – zmień NAZWA_KANALU na Twój -->
-    <iframe
-        src="https://player.twitch.tv/?channel=NAZWA_KANALU&parent=twojastrona.netlify.app"
-        allowfullscreen>
-    </iframe>
+    <!-- PLAYER -->
+    <!-- Wystarczy wstawić link do Twitch lub YouTube -->
+    <!-- Twitch: zmień NAZWA_KANALU na swój kanał i parent na domenę strony -->
+    <iframe id="livePlayer" src="https://www.twitch.tv/lukoviatv_junior_mlodszy" allowfullscreen></iframe>
 
-    <!-- Player YouTube alternatywnie -->
-    <!-- <iframe width="100%" height="560" src="https://www.youtube.com/embed/ID_VIDEO?autoplay=1" allowfullscreen></iframe> -->
+    <!-- YouTube alternatywnie (odkomentuj i zmień link) -->
+    <!-- <iframe id="livePlayer" src="https://www.youtube.com/embed/ID_VIDEO?autoplay=1" allowfullscreen></iframe> -->
 </div>
 
 <div class="info">
     Transmisja tylko dla osób z linkiem. Udostępnij znajomym!<br>
-    Strona Łukovia TV – styl piłkarski ⚽
+                      Strona Łukovia TV 
 </div>
+
+<script>
+// Możesz dynamicznie zmieniać link do streama w JS
+// Przykład: zmiana Twitcha
+// document.getElementById('livePlayer').src = "https://www.twitch.tv/lukoviatv_junior_mlodszy.netlify.app";
+
+// Przykład: zmiana YouTube
+// document.getElementById('livePlayer').src = "https://www.youtube.com/embed/ID_VIDEO?autoplay=1";
+</script>
 
 </body>
 </html>
